@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 
 # Load the dataset
-csv_url = "/mnt/data/The_Cancer_data_1500_V2.csv"
+csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
 try:
     df = pd.read_csv(csv_url)
     st.write("Dataset loaded successfully.")
