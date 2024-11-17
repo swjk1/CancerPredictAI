@@ -6,11 +6,22 @@ import numpy as np
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
+
+# Try to read and display the CSV file
 try:
+    # Load the CSV file into a DataFrame
     df = pd.read_csv(csv_url)
+    
+    # Display the data in Streamlit
+    st.write("### Here is the Cancer Data:")
+    st.dataframe(df)  # Interactive table
+    
+    # Optional: Display summary statistics
+    st.write("### Summary Statistics:")
+    st.write(df.describe())
+    
 except Exception as e:
-    st.error(f"Error loading dataset: {e}")
-    st.stop()
+    st.error(f"An error occurred while loading the CSV file: {e}")
 
 
 # Define features (X) and target (y)
