@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 import numpy as np
 
 # Load the dataset
@@ -45,8 +45,8 @@ if df[required_columns].isnull().any().any():
     })
 
 # Define features (X) and target (y)
-X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory', 'Diagnosis']]
-y = df['GeneticRisk']  # Example target; replace with correct target if needed
+X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
+y = df['Diagnosis']
 
 # Train the model
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -66,16 +66,27 @@ genetic_risk = st.sidebar.slider("Genetic Risk (0-10)", min_value=0, max_value=1
 physical_activity = st.sidebar.slider("Physical Activity (0-10)", min_value=0, max_value=10, value=5)
 alcohol_intake = st.sidebar.slider("Alcohol Intake (0-10)", min_value=0, max_value=10, value=5)
 cancer_history = st.sidebar.selectbox("Cancer History", options=["Yes", "No"])
-diagnosis = st.sidebar.selectbox("Diagnosis", options=[0, 1])
 
 # Encode user inputs
 gender_encoded = 0 if gender == "Male" else 1
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
 # Prepare input for prediction
-input_data = np.array([[age, gender_encoded, bmi, smoking, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded, diagnosis]])
+input_data = np.array([[age, gender_encoded, bmi, smoking, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
 # Predict and display result
 if st.sidebar.button("Predict"):
-    prediction = model.predict(input_data)
-    st.write(f"### Predicted Genetic Risk: {prediction[0]}")
+    prediction_proba = model.predict_proba(input_data)[0][1]  # Probability of being diagnosed (1)
+    prediction_percentage = round(prediction_proba * 100, 2)
+
+    # Classify risk level
+    if prediction_percentage < 33:
+        risk_level = "Low Risk"
+    elif prediction_percentage < 66:
+        risk_level = "Medium Risk"
+    else:
+        risk_level = "High Risk"
+
+    # Display the results
+    st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
+    st.write(f"### Risk Level: {risk_level}")
