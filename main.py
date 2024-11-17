@@ -8,21 +8,10 @@ import numpy as np
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
 try:
     df = pd.read_csv(csv_url)
-    st.write("Dataset loaded successfully.")
 except Exception as e:
     st.error(f"Error loading dataset: {e}")
     st.stop()
 
-# Display dataset columns for debugging
-st.write("Dataset Columns:", df.columns.tolist())
-
-# Verify required columns
-required_columns = ['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory', 'Diagnosis']
-missing_columns = [col for col in required_columns if col not in df.columns]
-
-if missing_columns:
-    st.error(f"The following required columns are missing in the dataset: {missing_columns}")
-    st.stop()
 
 # Define features (X) and target (y)
 X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
