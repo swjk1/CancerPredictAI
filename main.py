@@ -13,7 +13,7 @@ try:
     df = pd.read_csv(csv_url)
     
     # Display the data in Streamlit
-    st.write("### Here is the Cancer Data:")
+    st.write("### Cancer Data:")
     st.dataframe(df)  # Interactive table
     
     # Optional: Display summary statistics
