@@ -20,6 +20,35 @@ try:
     st.write("### Summary Statistics:")
     st.write(df.describe())
     
+    # Automatically generate histograms for all numeric columns
+    st.write("### Histograms for Numeric Columns:")
+
+    # Select numeric columns only
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    num_cols = len(numeric_columns)
+
+    if num_cols > 0:
+        # Create subplots for all numeric columns
+        fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
+        axes = axes.flatten()  # Flatten axes for easy iteration
+    
+        for i, column in enumerate(numeric_columns):
+            ax = axes[i]
+            ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
+            ax.set_title(f"Histogram of {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+            ax.grid(True, linestyle='--', alpha=0.7)
+    
+        # Hide unused subplots
+        for j in range(i + 1, len(axes)):
+            fig.delaxes(axes[j])
+    
+        # Display the histograms
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histogram generation.")
+
 except Exception as e:
     st.error(f"An error occurred while loading the CSV file: {e}")
 
