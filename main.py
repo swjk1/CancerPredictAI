@@ -96,5 +96,25 @@ if st.checkbox("Show Model Performance Metrics"):
     st.write("### Classification Report:")
     st.dataframe(pd.DataFrame(report).transpose())  # Display as a nice table
 
+#Confusion Matrix
+if st.checkbox("Show Confusion Matrix"):
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+    # Generate predictions
+    y_pred = model.predict(X_test)
+    
+    # Create the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+
+    # Plot confusion matrix
+    fig, ax = plt.subplots()
+    disp.plot(ax=ax)
+    
+    # Streamlit requires explicit rendering
+    st.pyplot(fig)
+
+
 
 
