@@ -181,26 +181,50 @@ disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for
 st.pyplot(fig)
 
 # Histogram visualization improvements
-if st.checkbox("Histograms of Cancer Patient Data Distribution"):
-    selected_column = st.sidebar.selectbox("Select a column for histogram:", options=df.columns)
-    if st.sidebar.button("Show Histogram"):
-        plt.figure(figsize=(10, 6))
-        plt.hist(df[selected_column], bins=20, color='blue', alpha=0.7, edgecolor='black')
-        plt.title(f"Histogram of {selected_column}")
-        plt.xlabel(selected_column)
-        plt.ylabel("Frequency")
-        st.pyplot(plt)
+st.sidebar.header("Cancer Patient Data Distribution")
 
-    if st.checkbox("Show Histograms for All Columns"):
-        st.write("Histograms for All Columns")
-        for column in df.columns:
-            plt.figure(figsize=(10, 6))
-            plt.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
-            plt.title(f"Histogram of {column}")
-            plt.xlabel(column)
-            plt.ylabel("Frequency")
-            st.pyplot(plt)
+# Select single column or display all histograms
+view_all = st.sidebar.checkbox("Show Histograms for All Columns")
 
+if view_all:
+    # Display histograms for all numeric columns
+    st.write("### Histograms for All Numeric Columns")
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    num_cols = len(numeric_columns)
+    
+    if num_cols > 0:
+        fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
+        axes = axes.flatten()  # Flatten for easy iteration
+        
+        for i, column in enumerate(numeric_columns):
+            ax = axes[i]
+            ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
+            ax.set_title(f"Histogram of {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+            ax.grid(True, linestyle='--', alpha=0.7)
+        
+        # Hide unused subplots
+        for j in range(i + 1, len(axes)):
+            fig.delaxes(axes[j])
+
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histogram generation.")
+else:
+    # Display histogram for a single selected column
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    selected_column = st.sidebar.selectbox("Select a numeric column for histogram:", options=numeric_columns)
+
+    if selected_column:
+        st.write(f"### Histogram of {selected_column}")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.hist(df[selected_column], bins=20, color='blue', alpha=0.7, edgecolor='black')
+        ax.set_title(f"Histogram of {selected_column}")
+        ax.set_xlabel(selected_column)
+        ax.set_ylabel("Frequency")
+        ax.grid(True, linestyle='--', alpha=0.7)
+        st.pyplot(fig)
 
 
 
