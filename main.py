@@ -114,8 +114,9 @@ with tab1:
         # Display the results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
         st.markdown(f"### Risk Level: **{risk_level}**")
+        st.write("")
     else:
-        st.markdown("**Click \"Predict\" to see results**")
+        st.markdown("# Click **\"Predict\"** to see results")
         
 
 with tab2:
