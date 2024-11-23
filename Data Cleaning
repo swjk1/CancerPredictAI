@@ -1,0 +1,12 @@
+import pandas as pd
+
+# Load the dataset
+csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
+df = pd.read_csv(csv_url)
+
+# Checking if there are any missing values (NaN) in the dataset and printing the result
+print("\nAre there any missing points in the dataset?:", df.isnull().values.any())
+
+print("Number of Duplicated Rows:", df.duplicated().sum())
+df.drop_duplicates(keep='first', inplace=True)
+print("Dimensions of the Data:", df.shape)
