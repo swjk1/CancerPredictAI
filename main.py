@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
 
 st.title("Cancer Risk Assessment Model")
-
+df = pd.read_csv(csv_url)
 
 
 # Define features (X) and target (y)
@@ -139,7 +139,7 @@ with tab2:
     # Try to read and display the CSV file
     try:
         # Load the CSV file into a DataFrame
-        df = pd.read_csv(csv_url)
+        
 
         # Display the data in Streamlit
         st.header("Cancer Data:")
