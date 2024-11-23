@@ -8,6 +8,8 @@ import numpy as np
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
 
+st.write("##Cancer Risk Assessment Model##")
+
 # Try to read and display the CSV file
 try:
     # Load the CSV file into a DataFrame
