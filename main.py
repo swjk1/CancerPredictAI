@@ -52,6 +52,13 @@ gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
+#Handle potential input errors
+if age <= 0 or age > 120:
+    st.sidebar.error("Age must be between 1 and 120.")
+if bmi <= 0 or bmi > 50:
+    st.sidebar.error("BMI must be between 10 and 50.")
+
+
 # Prepare input for prediction
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
@@ -72,11 +79,6 @@ if st.sidebar.button("Predict"):
     st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
     st.write(f"### Risk Level: {risk_level}")
 
-# Train the model
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
-
 # Add model validation metrics here
 if st.checkbox("Show Model Performance Metrics"):
     from sklearn.metrics import classification_report, accuracy_score
@@ -93,4 +95,15 @@ if st.checkbox("Show Model Performance Metrics"):
     
     st.write("### Classification Report:")
     st.dataframe(pd.DataFrame(report).transpose())  # Display as a nice table
+
+# Optional: Confusion Matrix
+    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+    import matplotlib.pyplot as plt
+
+    if st.checkbox("Show Confusion Matrix"):
+        cm = confusion_matrix(y_test, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+        fig, ax = plt.subplots()
+        disp.plot(ax=ax)
+        st.pyplot(fig)
 
