@@ -79,67 +79,45 @@ else:
 # Streamlit app layout
 st.title("Cancer Risk Prediction")
 
-# User input section
+# Sidebar: Input Patient Data
 st.sidebar.header("Input Patient Data")
+
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
 bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
 smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
+cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
 
 # Sidebar: Genetic Risk Assessment
-st.sidebar.subheader("Genetic Risk Assessment")
-
-# Step 1: Do they have a family history of cancer?
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
 
 if family_history == "No":
-    genetic_risk = 0  # No family history, low risk
+    genetic_risk = 0
 else:
-    # Step 2: Ask about close relatives
-    close_relatives = st.sidebar.slider(
-        "How many close relatives (parents, siblings, children) have been diagnosed with cancer?",
-        0, 10, 0
-    )
-
-    # Step 3: Ask about remote relatives
-    remote_relatives = st.sidebar.slider(
-        "How many remote relatives (grandparents, uncles, aunts, cousins) have been diagnosed with cancer?",
-        0, 10, 0
-    )
-
-    # Step 4: Was early diagnosis involved?
-    early_diagnosis = st.sidebar.selectbox(
-        "Were any of these diagnoses at an early age (below 50)?", ["No", "Yes"]
-    )
-
-    # Calculate genetic risk based on responses
+    close_relatives = st.sidebar.slider("How many close relatives (parents, siblings, children) have been diagnosed with cancer?", 0, 10, 0)
+    remote_relatives = st.sidebar.slider("How many remote relatives (grandparents, uncles, aunts, cousins) have been diagnosed with cancer?", 0, 10, 0)
+    early_diagnosis = st.sidebar.selectbox("Were any of these diagnoses at an early age (below 50)?", ["No", "Yes"])
     if close_relatives >= 2 or early_diagnosis == "Yes":
-        genetic_risk = 2  # High genetic risk
+        genetic_risk = 2
     elif close_relatives == 1 or remote_relatives >= 2:
-        genetic_risk = 1  # Medium genetic risk
+        genetic_risk = 1
     else:
-        genetic_risk = 0  # Low genetic risk
+        genetic_risk = 0
 
-# Encode user inputs (use genetic_risk for prediction)
+# Encoding inputs (ensure this section comes AFTER all inputs)
 gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
-physical_activity = st.sidebar.slider("Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
-alcohol_intake = st.sidebar.slider("Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
-cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+# Prepare input for prediction
+input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
-# Encode user inputs
-gender_encoded = 1 if gender == "Female" else 0
-smoking_encoded = 1 if smoking == "Yes" else 0
-cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
 #Handle potential input errors
 if age <= 0 or age > 120:
     st.sidebar.error("Age must be between 1 and 120.")
 if bmi <= 0 or bmi > 50:
     st.sidebar.error("BMI must be between 10 and 50.")
-
 
 # Prepare input for prediction
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
