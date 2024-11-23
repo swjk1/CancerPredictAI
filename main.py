@@ -142,6 +142,44 @@ if st.sidebar.button("Predict"):
     st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
     st.write(f"### Risk Level: {risk_level}")
 
+# Predict with the trained model
+y_pred = model.predict(X_test)
+
+# Calculate accuracy
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(y_test, y_pred)
+st.write(f"### Accuracy: {accuracy * 100:.2f}%")
+
+# Display classification report
+from sklearn.metrics import classification_report
+report = classification_report(y_test, y_pred, output_dict=True)
+
+st.write("### Classification Report")
+report_df = pd.DataFrame(report).transpose()
+st.dataframe(report_df)
+
+# Display key metrics for class 1
+precision = report_df.loc["1", "precision"]
+recall = report_df.loc["1", "recall"]
+f1_score = report_df.loc["1", "f1-score"]
+
+st.write("### Key Metrics for Class 1 (Cancer)")
+st.write(f"- **Precision:** {precision:.2f}")
+st.write(f"- **Recall:** {recall:.2f}")
+st.write(f"- **F1-Score:** {f1_score:.2f}")
+
+# Display confusion matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+st.write("### Confusion Matrix")
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+
+fig, ax = plt.subplots()
+disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+st.pyplot(fig)
+
 # Histogram visualization improvements
 if st.checkbox("Histograms of Cancer Patient Data Distribution"):
     selected_column = st.sidebar.selectbox("Select a column for histogram:", options=df.columns)
