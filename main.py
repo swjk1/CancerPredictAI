@@ -116,7 +116,7 @@ with tab1:
         st.markdown(f"### Risk Level: **{risk_level}**")
         st.write("")
     else:
-        st.markdown("# Click **\"Predict\"** to see results")
+        st.markdown("### Click **\"Predict\"** to see results")
         
 
 with tab2:
