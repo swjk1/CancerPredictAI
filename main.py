@@ -79,41 +79,44 @@ if st.sidebar.button("Predict"):
     st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
     st.write(f"### Risk Level: {risk_level}")
 
-# Add model validation metrics here
-if st.checkbox("Show Model Performance Metrics"):
-    from sklearn.metrics import classification_report, accuracy_score
+# Predict with the trained model
+y_pred = model.predict(X_test)
 
-    # Generate predictions
-    y_pred = model.predict(X_test)
+# Calculate accuracy
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(y_test, y_pred)
+st.write(f"### Accuracy: {accuracy * 100:.2f}%")
 
-    # Calculate and display metrics
-    accuracy = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred, output_dict=True)
-    
-    st.write("### Model Accuracy:")
-    st.write(f"{accuracy * 100:.2f}%")
-    
-    st.write("### Classification Report:")
-    st.dataframe(pd.DataFrame(report).transpose())  # Display as a nice table
+# Display classification report
+from sklearn.metrics import classification_report
+report = classification_report(y_test, y_pred, output_dict=True)
 
-#Confusion Matrix
-if st.checkbox("Show Confusion Matrix"):
-    import matplotlib.pyplot as plt
-    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+st.write("### Classification Report")
+report_df = pd.DataFrame(report).transpose()
+st.dataframe(report_df)
 
-    # Generate predictions
-    y_pred = model.predict(X_test)
-    
-    # Create the confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+# Display key metrics for class 1
+precision = report_df.loc["1", "precision"]
+recall = report_df.loc["1", "recall"]
+f1_score = report_df.loc["1", "f1-score"]
 
-    # Plot confusion matrix
-    fig, ax = plt.subplots()
-    disp.plot(ax=ax)
-    
-    # Streamlit requires explicit rendering
-    st.pyplot(fig)
+st.write("### Key Metrics for Class 1 (Cancer)")
+st.write(f"- **Precision:** {precision:.2f}")
+st.write(f"- **Recall:** {recall:.2f}")
+st.write(f"- **F1-Score:** {f1_score:.2f}")
+
+# Display confusion matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+st.write("### Confusion Matrix")
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+
+fig, ax = plt.subplots()
+disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+st.pyplot(fig)
+
 
 
 
