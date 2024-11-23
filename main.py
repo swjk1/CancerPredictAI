@@ -100,7 +100,6 @@ else:
     else:
         genetic_risk = 1
 
-st.write(f"### Calculated Genetic Risk: {genetic_risk}")
 physical_activity = st.sidebar.slider("Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
 alcohol_intake = st.sidebar.slider("Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
