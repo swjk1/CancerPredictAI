@@ -78,6 +78,18 @@ if bmi <= 0 or bmi > 50:
 y_pred = model.predict(X_test)
 
 
+st.markdown(
+    """
+    <style>
+    /* Increase font size for tab buttons */
+    div[class*="stTabs"] button {
+        font-size: 20px;
+        padding: 10px 20px; /* Adjust padding if needed */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 
@@ -103,7 +115,7 @@ with tab1:
         st.write(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
         st.write(f"### Risk Level: **{risk_level}**")
     else:
-        st.markdown("Click \"Predict\" to see results")
+        st.markdown("**Click \"Predict\" to see results**")
         
 
 with tab2:
