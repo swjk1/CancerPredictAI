@@ -1,3 +1,10 @@
+uploaded_file = st.sidebar.file_uploader("Upload your dataset (CSV)", type="csv")
+
+if uploaded_file is not None:
+    new_df = pd.read_csv(uploaded_file)
+    st.write("### Uploaded Dataset:")
+    st.dataframe(new_df)
+
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
