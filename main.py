@@ -71,3 +71,26 @@ if st.sidebar.button("Predict"):
     # Display the results
     st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
     st.write(f"### Risk Level: {risk_level}")
+
+# Train the model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# Add model validation metrics here
+if st.checkbox("Show Model Performance Metrics"):
+    from sklearn.metrics import classification_report, accuracy_score
+
+    # Generate predictions
+    y_pred = model.predict(X_test)
+
+    # Calculate and display metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    report = classification_report(y_test, y_pred, output_dict=True)
+    
+    st.write("### Model Accuracy:")
+    st.write(f"{accuracy * 100:.2f}%")
+    
+    st.write("### Classification Report:")
+    st.dataframe(pd.DataFrame(report).transpose())  # Display as a nice table
+
