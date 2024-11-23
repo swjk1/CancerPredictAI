@@ -203,6 +203,29 @@ fig, ax = plt.subplots()
 disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
 st.pyplot(fig)
 
+#Visualize the distribution of Breast Cancer Patient used as sample in this model
+#Goal: identify patterns and potential outliers in the data
+if st.checkbox("Histograms of Cancer Patient Data Distribution"):
+    st.sidebar.header("Histograms of Cancer Patient Data Distribution")
+    selected_column = st.sidebar.selectbox("Select a column for histogram:", options=df.columns)
+    if st.sidebar.button("Show Histogram"):
+        plt.figure(figsize=(10, 6))
+        plt.hist(df[selected_column], bins=20, color='blue', alpha=0.7, edgecolor='black')
+        plt.title(f"Histogram of {selected_column}")
+        plt.xlabel(selected_column)
+        plt.ylabel("Frequency")
+        st.pyplot(plt)
+    if st.checkbox("Show Histograms for All Columns"):
+        st.write("Histograms for All Columns")
+        for column in df.columns:
+            plt.figure(figsize=(10, 6))
+            plt.hist(df[column], bins=20, color='dark blue', alpha=0.7, edgecolor='black')
+            plt.title(f"Histogram of {column}")
+            plt.xlabel(column)
+            plt.ylabel("Frequency")
+            st.pyplot(plt)
+
+
 
 
 
