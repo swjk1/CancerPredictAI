@@ -77,43 +77,12 @@ if bmi <= 0 or bmi > 50:
 # Predict with the trained model
 y_pred = model.predict(X_test)
 
-# Calculate accuracy
-
-accuracy = accuracy_score(y_test, y_pred)
-st.write(f"### Accuracy: {accuracy * 100:.2f}%")
-
-# Display classification report
-
-report = classification_report(y_test, y_pred, output_dict=True)
-
-st.write("### Classification Report")
-report_df = pd.DataFrame(report).transpose()
-st.dataframe(report_df)
-
-# Display key metrics for class 1
-precision = report_df.loc["1", "precision"]
-recall = report_df.loc["1", "recall"]
-f1_score = report_df.loc["1", "f1-score"]
-
-st.write("### Key Metrics for Class 1 (Cancer)")
-st.write(f"- **Precision:** {precision:.2f}")
-st.write(f"- **Recall:** {recall:.2f}")
-st.write(f"- **F1-Score:** {f1_score:.2f}")
-
-
-
-st.write("### Confusion Matrix")
-cm = confusion_matrix(y_test, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-
-fig, ax = plt.subplots()
-disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
-st.pyplot(fig)
 
 
 
 
-tab1, tab2 = st.tabs(["Results", "Data"])
+
+tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
 # Content for each tab
 with tab1:
@@ -180,6 +149,40 @@ with tab2:
 
     except Exception as e:
         st.error(f"An error occurred while loading the CSV file: {e}")
+
+with tab3:
+    # Calculate accuracy
+
+    accuracy = accuracy_score(y_test, y_pred)
+    st.write(f"### Accuracy: {accuracy * 100:.2f}%")
+    
+    # Display classification report
+    
+    report = classification_report(y_test, y_pred, output_dict=True)
+    
+    st.write("### Classification Report")
+    report_df = pd.DataFrame(report).transpose()
+    st.dataframe(report_df)
+    
+    # Display key metrics for class 1
+    precision = report_df.loc["1", "precision"]
+    recall = report_df.loc["1", "recall"]
+    f1_score = report_df.loc["1", "f1-score"]
+    
+    st.write("### Key Metrics for Class 1 (Cancer)")
+    st.write(f"- **Precision:** {precision:.2f}")
+    st.write(f"- **Recall:** {recall:.2f}")
+    st.write(f"- **F1-Score:** {f1_score:.2f}")
+    
+    
+    
+    st.write("### Confusion Matrix")
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+    
+    fig, ax = plt.subplots()
+    disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+    st.pyplot(fig)
 
 
 
