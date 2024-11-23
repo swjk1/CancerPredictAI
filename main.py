@@ -4,6 +4,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
@@ -179,12 +182,12 @@ if st.sidebar.button("Predict"):
 y_pred = model.predict(X_test)
 
 # Calculate accuracy
-from sklearn.metrics import accuracy_score
+
 accuracy = accuracy_score(y_test, y_pred)
 st.write(f"### Accuracy: {accuracy * 100:.2f}%")
 
 # Display classification report
-from sklearn.metrics import classification_report
+
 report = classification_report(y_test, y_pred, output_dict=True)
 
 st.write("### Classification Report")
@@ -201,9 +204,7 @@ st.write(f"- **Precision:** {precision:.2f}")
 st.write(f"- **Recall:** {recall:.2f}")
 st.write(f"- **F1-Score:** {f1_score:.2f}")
 
-# Display confusion matrix
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
+
 
 st.write("### Confusion Matrix")
 cm = confusion_matrix(y_test, y_pred)
@@ -216,4 +217,20 @@ st.pyplot(fig)
 
 
 
+tab1, tab2, tab3 = st.tabs(["Home", "Data", "Settings"])
 
+# Content for each tab
+with tab1:
+    st.header("Welcome to the Home Tab")
+    st.write("This is the content for the Home tab.")
+
+with tab2:
+    st.header("Data Tab")
+    st.write("Here you can display your data.")
+    st.write({"key": "value"})  # Example of data display
+
+with tab3:
+    st.header("Settings Tab")
+    st.write("Customize your settings here.")
+    option = st.selectbox("Choose an option:", ["Option 1", "Option 2", "Option 3"])
+    st.write(f"You selected: {option}")
