@@ -133,8 +133,8 @@ family_history = st.sidebar.selectbox("Do you have a family history of cancer?",
 if family_history == "No":
     genetic_risk = 0
 else:
-    close_relatives = st.sidebar.slider("How many close relatives (parents, siblings, children) have been diagnosed with cancer?", 0, 10, 0, value=2)
-    remote_relatives = st.sidebar.slider("How many remote relatives (grandparents, uncles, aunts, cousins) have been diagnosed with cancer?", 0, 10, 0, value = 2)
+    close_relatives = st.sidebar.slider("How many close relatives (parents, siblings, children) have been diagnosed with cancer?", 0, 10, 0)
+    remote_relatives = st.sidebar.slider("How many remote relatives (grandparents, uncles, aunts, cousins) have been diagnosed with cancer?", 0, 10, 0)
     early_diagnosis = st.sidebar.selectbox("Were any of these diagnoses at an early age (below 50)?", ["No", "Yes"])
     if close_relatives >= 2 or early_diagnosis == "Yes":
         genetic_risk = 2
