@@ -125,10 +125,6 @@ gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
-# Prepare input for prediction
-input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genet
-
-
 physical_activity = st.sidebar.slider("Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
 alcohol_intake = st.sidebar.slider("Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
