@@ -113,7 +113,7 @@ st.pyplot(fig)
 
 
 
-tab1, tab2, tab3 = st.tabs(["Results", "Data"])
+tab1, tab2 = st.tabs(["Results", "Data"])
 
 # Content for each tab
 with tab1:
