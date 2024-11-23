@@ -83,7 +83,7 @@ st.markdown(
     <style>
     /* Increase font size for tab buttons */
     div[class*="stTabs"] button {
-        font-size: 20px;
+        font-size: 30px;
         padding: 10px 20px; /* Adjust padding if needed */
     }
     </style>
@@ -112,8 +112,8 @@ with tab1:
             risk_level = "High Risk"
 
         # Display the results
-        st.write(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
-        st.write(f"### Risk Level: **{risk_level}**")
+        st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
+        st.markdown(f"### Risk Level: **{risk_level}**")
     else:
         st.markdown("**Click \"Predict\" to see results**")
         
