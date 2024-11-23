@@ -171,8 +171,8 @@ if st.sidebar.button("Predict"):
         risk_level = "High Risk"
 
     # Display the results
-    st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
-    st.write(f"### Risk Level: {risk_level}")
+    st.write(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
+    st.write(f"### Risk Level: **{risk_level}**")
 
 # Predict with the trained model
 y_pred = model.predict(X_test)
