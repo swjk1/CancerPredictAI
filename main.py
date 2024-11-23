@@ -85,7 +85,22 @@ age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
 bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
 smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
-genetic_risk = st.sidebar.slider("Genetic Risk (0-2)", min_value=0, max_value=2, value=1)
+
+# Sidebar: Genetic Risk Assessment
+st.sidebar.header("Genetic Risk Assessment")
+
+family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
+if family_history == "No":
+    genetic_risk = 0
+else:
+    num_family_members = st.sidebar.slider("How many family members have been diagnosed with cancer?", 1, 10, 1)
+    early_diagnosis = st.sidebar.selectbox("Were they diagnosed at an early age (below 50)?", ["No", "Yes"])
+    if num_family_members > 2 or early_diagnosis == "Yes":
+        genetic_risk = 2
+    else:
+        genetic_risk = 1
+
+st.write(f"### Calculated Genetic Risk: {genetic_risk}")
 physical_activity = st.sidebar.slider("Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
 alcohol_intake = st.sidebar.slider("Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
