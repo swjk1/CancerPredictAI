@@ -16,11 +16,11 @@ try:
     df = pd.read_csv(csv_url)
     
     # Display the data in Streamlit
-    st.write("### Cancer Data:")
+    st.header("Cancer Data:")
     st.dataframe(df)  # Interactive table
     
     # Optional: Display summary statistics
-    st.write("### Summary Statistics:")
+    st.header("Summary Statistics:")
     st.write(df.describe())
     
     # Automatically generate histograms for all numeric columns
