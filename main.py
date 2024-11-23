@@ -83,7 +83,7 @@ st.markdown(
     <style>
     /* Increase font size for tab buttons */
     div[class*="stTabs"] button {
-        font-size: 30px;
+        font-size: 80px;
         padding: 10px 20px; /* Adjust padding if needed */
     }
     </style>
