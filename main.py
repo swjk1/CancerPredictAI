@@ -82,11 +82,18 @@ st.title("Cancer Risk Prediction")
 # Sidebar: Input Patient Data
 st.sidebar.header("Input Patient Data")
 
+# Define user inputs
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
 bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
 smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+physical_activity = st.sidebar.slider(
+    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
+)
+alcohol_intake = st.sidebar.slider(
+    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
+)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
@@ -104,7 +111,7 @@ else:
     else:
         genetic_risk = 0
 
-# Encoding inputs (ensure this section comes AFTER all inputs)
+# Encoding inputs
 gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
@@ -112,15 +119,11 @@ cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 # Prepare input for prediction
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
-
-#Handle potential input errors
+# Handle potential input errors
 if age <= 0 or age > 120:
     st.sidebar.error("Age must be between 1 and 120.")
 if bmi <= 0 or bmi > 50:
     st.sidebar.error("BMI must be between 10 and 50.")
-
-# Prepare input for prediction
-input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
 # Predict and display result
 if st.sidebar.button("Predict"):
@@ -139,48 +142,8 @@ if st.sidebar.button("Predict"):
     st.write(f"### Predicted Cancer Risk: {prediction_percentage}%")
     st.write(f"### Risk Level: {risk_level}")
 
-# Predict with the trained model
-y_pred = model.predict(X_test)
-
-# Calculate accuracy
-from sklearn.metrics import accuracy_score
-accuracy = accuracy_score(y_test, y_pred)
-st.write(f"### Accuracy: {accuracy * 100:.2f}%")
-
-# Display classification report
-from sklearn.metrics import classification_report
-report = classification_report(y_test, y_pred, output_dict=True)
-
-st.write("### Classification Report")
-report_df = pd.DataFrame(report).transpose()
-st.dataframe(report_df)
-
-# Display key metrics for class 1
-precision = report_df.loc["1", "precision"]
-recall = report_df.loc["1", "recall"]
-f1_score = report_df.loc["1", "f1-score"]
-
-st.write("### Key Metrics for Class 1 (Cancer)")
-st.write(f"- **Precision:** {precision:.2f}")
-st.write(f"- **Recall:** {recall:.2f}")
-st.write(f"- **F1-Score:** {f1_score:.2f}")
-
-# Display confusion matrix
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
-
-st.write("### Confusion Matrix")
-cm = confusion_matrix(y_test, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-
-fig, ax = plt.subplots()
-disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
-st.pyplot(fig)
-
-#Visualize the distribution of Breast Cancer Patient used as sample in this model
-#Goal: identify patterns and potential outliers in the data
+# Histogram visualization improvements
 if st.checkbox("Histograms of Cancer Patient Data Distribution"):
-    st.sidebar.header("Histograms of Cancer Patient Data Distribution")
     selected_column = st.sidebar.selectbox("Select a column for histogram:", options=df.columns)
     if st.sidebar.button("Show Histogram"):
         plt.figure(figsize=(10, 6))
@@ -189,16 +152,16 @@ if st.checkbox("Histograms of Cancer Patient Data Distribution"):
         plt.xlabel(selected_column)
         plt.ylabel("Frequency")
         st.pyplot(plt)
+
     if st.checkbox("Show Histograms for All Columns"):
         st.write("Histograms for All Columns")
         for column in df.columns:
             plt.figure(figsize=(10, 6))
-            plt.hist(df[column], bins=20, color='dark blue', alpha=0.7, edgecolor='black')
+            plt.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
             plt.title(f"Histogram of {column}")
             plt.xlabel(column)
             plt.ylabel("Frequency")
             st.pyplot(plt)
-
 
 
 
