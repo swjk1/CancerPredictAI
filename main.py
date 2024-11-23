@@ -1,10 +1,3 @@
-uploaded_file = st.sidebar.file_uploader("Upload your dataset (CSV)", type="csv")
-
-if uploaded_file is not None:
-    new_df = pd.read_csv(uploaded_file)
-    st.write("### Uploaded Dataset:")
-    st.dataframe(new_df)
-
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -39,6 +32,49 @@ y = df['Diagnosis']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
+
+# File uploader for testing other datasets
+uploaded_file = st.sidebar.file_uploader("Upload your dataset (CSV)", type="csv")
+
+if uploaded_file is not None:
+    try:
+        # Read the uploaded file into a DataFrame
+        new_df = pd.read_csv(uploaded_file)
+
+        st.write("### Uploaded Dataset:")
+        st.dataframe(new_df)
+
+        # Ensure the dataset has the required columns
+        required_columns = ['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory', 'Diagnosis']
+        if not all(col in new_df.columns for col in required_columns):
+            st.error(f"The uploaded dataset must contain the following columns: {required_columns}")
+        else:
+            # If dataset is valid, extract features and target
+            X_new = new_df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
+            y_new = new_df['Diagnosis']
+
+            # Use the pre-trained model to make predictions on the new dataset
+            y_new_pred = model.predict(X_new)
+
+            # Evaluate the new dataset
+            from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+
+            st.write("### Classification Report on Uploaded Dataset")
+            report_new = classification_report(y_new, y_new_pred, output_dict=True)
+            report_df_new = pd.DataFrame(report_new).transpose()
+            st.dataframe(report_df_new)
+
+            st.write("### Confusion Matrix for Uploaded Dataset")
+            cm_new = confusion_matrix(y_new, y_new_pred)
+            disp_new = ConfusionMatrixDisplay(confusion_matrix=cm_new, display_labels=model.classes_)
+            fig_new, ax_new = plt.subplots()
+            disp_new.plot(ax=ax_new)
+            st.pyplot(fig_new)
+
+    except Exception as e:
+        st.error(f"An error occurred while processing the file: {e}")
+else:
+    st.info("Please upload a dataset to test the model.")
 
 # Streamlit app layout
 st.title("Cancer Risk Prediction")
