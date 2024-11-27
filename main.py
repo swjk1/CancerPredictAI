@@ -7,6 +7,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import PolynomialFeatures
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
@@ -14,16 +15,22 @@ csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Canc
 st.title("Cancer Risk Assessment Model")
 df = pd.read_csv(csv_url)
 
-
 # Define features (X) and target (y)
 X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
 y = df['Diagnosis']
+
+# Apply Polynomial Features (example: degree=2, for Age and BMI)
+poly = PolynomialFeatures(degree=2)
+X_poly = poly.fit_transform(X[['BMI', 'Age']])
+X_poly_df = pd.DataFrame(X_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
+
+# Add the polynomial features to the original dataframe
+X = pd.concat([X, X_poly_df], axis=1)
 
 # Train the model
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
-
 
 # Streamlit app layout
 st.title("Cancer Risk Prediction")
@@ -77,7 +84,6 @@ if bmi <= 0 or bmi > 50:
 # Predict with the trained model
 y_pred = model.predict(X_test)
 
-
 st.markdown(
     """
     <style>
@@ -90,9 +96,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
-
 
 tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
@@ -117,14 +120,27 @@ with tab1:
         st.write("")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
-        
+
+# Check feature importance
+feature_importance = model.feature_importances_
+
+# Create a DataFrame to display the feature importance
+importance_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': feature_importance
+})
+
+# Sort by importance to see which features are most influential
+importance_df = importance_df.sort_values(by='Importance', ascending=False)
+
+# Display the feature importance
+st.write("### Feature Importance:")
+st.write(importance_df)
 
 with tab2:
     # Try to read and display the CSV file
     try:
         # Load the CSV file into a DataFrame
-        
-
         # Display the data in Streamlit
         st.header("Cancer Data:")
         st.dataframe(df)  # Interactive table
@@ -144,7 +160,7 @@ with tab2:
             # Create subplots for all numeric columns
             fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
             axes = axes.flatten()  # Flatten axes for easy iteration
-    
+
             for i, column in enumerate(numeric_columns):
                 ax = axes[i]
                 ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
@@ -152,11 +168,11 @@ with tab2:
                 ax.set_xlabel(column)
                 ax.set_ylabel("Frequency")
                 ax.grid(True, linestyle='--', alpha=0.7)
-    
+
             # Hide unused subplots
             for j in range(i + 1, len(axes)):
                 fig.delaxes(axes[j])
-    
+
             # Display the histograms
             st.pyplot(fig)
         else:
@@ -167,12 +183,10 @@ with tab2:
 
 with tab3:
     # Calculate accuracy
-
     accuracy = accuracy_score(y_test, y_pred)
     st.write(f"### Accuracy: {accuracy * 100:.2f}%")
 
     # Display classification report
-
     report = classification_report(y_test, y_pred, output_dict=True)
 
     st.write("### Classification Report")
@@ -184,17 +198,8 @@ with tab3:
     recall = report_df.loc["1", "recall"]
     f1_score = report_df.loc["1", "f1-score"]
 
-    st.write("### Key Metrics for Class 1 (Cancer)")
-    st.write(f"- **Precision:** {precision:.2f}")
-    st.write(f"- **Recall:** {recall:.2f}")
-    st.write(f"- **F1-Score:** {f1_score:.2f}")
+    st.write(f"### Class 1 (Cancer Positive) Metrics:")
+    st.write(f"Precision: {precision * 100:.2f}%")
+    st.write(f"Recall: {recall * 100:.2f}%")
+    st.write(f"F1-Score: {f1_score * 100:.2f}%")
 
-
-
-    st.write("### Confusion Matrix")
-    cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-
-    fig, ax = plt.subplots()
-    disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
-    st.pyplot(fig)
