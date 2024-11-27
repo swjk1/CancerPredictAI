@@ -82,7 +82,6 @@ elif bmi_option == "No":
 # Define user inputs
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
-bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
 smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
 physical_activity = st.sidebar.slider(
