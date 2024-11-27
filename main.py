@@ -35,7 +35,7 @@ model.fit(X_train, y_train)
 # Store BMI in session_state to persist across reruns
 if 'bmi' not in st.session_state:
     st.session_state.bmi = None
-    
+
 # Sidebar: BMI Input Section
 def calculate_bmi(weight, height, unit_system):
     if unit_system == "Metric":
@@ -97,20 +97,20 @@ if st.session_state.bmi is not None:
         st.sidebar.write("You are overweight.")
     else:
         st.sidebar.write("You are obese.")
-        
-# Check that bmi is defined before using it in the input_data
+
+# Ensure BMI is set before proceeding
 if bmi is None:
     st.sidebar.error("Please enter a valid BMI value to proceed.")
-else:
-    # Define user inputs
-    age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
-    gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
-    smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
-    cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
-    physical_activity = st.sidebar.slider(
-        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
-    alcohol_intake = st.sidebar.slider(
-        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
+
+# Initialize other inputs
+age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
+gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
+smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
+cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+physical_activity = st.sidebar.slider(
+    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
+alcohol_intake = st.sidebar.slider(
+    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
@@ -145,51 +145,33 @@ input_poly = poly.transform(input_df[['BMI', 'Age']])
 input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
 input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
 
-st.markdown(
-    """
-    <style>
-    /* Increase font size for tab buttons */
-    div[class*="stTabs"] button {
-        font-size: 80px;
-        padding: 10px 20px; /* Adjust padding if needed */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# Content for prediction tab
+if st.sidebar.button("Predict"):
+    if all(val is not None for val in [age, gender, bmi, smoking, genetic_risk, physical_activity, alcohol_intake, cancer_history]):
+        # Predict the probability of cancer risk
+        prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
+        prediction_percentage = round(prediction_proba * 100, 2)
 
-tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
-
-# Content for each tab
-with tab1:
-    # Trigger prediction when the "Predict" button is pressed
-    if st.sidebar.button("Predict"):
-        # Make sure all inputs are valid before predicting
-        if all(val is not None for val in [age, gender, bmi, smoking, genetic_risk, physical_activity, alcohol_intake, cancer_history]):
-            # Apply the same polynomial transformation to the input data as we did during training
-            input_data_poly = poly.transform(input_data[:, [2, 0]])  # Apply to 'Age' (index 0) and 'BMI' (index 2)
-            
-            # Combine the original input data with the polynomial features
-            input_data_transformed = np.hstack([input_data, input_data_poly])
-    
-            # Predict the probability of cancer risk
-            prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
-            prediction_percentage = round(prediction_proba * 100, 2)
-    
-            # Classify risk level based on the probability
-            if prediction_percentage < 33:
-                risk_level = "Low Risk"
-            elif prediction_percentage < 66:
-                risk_level = "Medium Risk"
-            else:
-                risk_level = "High Risk"
-    
-            # Display the prediction results
-            st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
-            st.markdown(f"### Risk Level: **{risk_level}**")
+        # Classify risk level based on the probability
+        if prediction_percentage < 33:
+            risk_level = "Low Risk"
+        elif prediction_percentage < 66:
+            risk_level = "Medium Risk"
         else:
-            st.sidebar.error("Please make sure all inputs are filled out correctly.")
+            risk_level = "High Risk"
 
+        # Display the prediction results
+        st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
+        st.markdown(f"**Risk Level: {risk_level}**")
+
+        # Display additional information about genetic risk factors if applicable
+        if genetic_risk > 0:
+            st.markdown("### Genetic Risk Factors")
+            st.write(f"Genetic Risk: {genetic_risk}")
+            st.write("Family history of cancer plays a critical role in the assessment of your genetic risk.")
+    else:
+        st.error("Please fill in all the fields to proceed with the prediction.")
+        
 with tab2:
     # Try to read and display the CSV file
     try:
