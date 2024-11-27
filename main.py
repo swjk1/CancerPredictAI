@@ -11,6 +11,8 @@ from sklearn.preprocessing import PolynomialFeatures
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
+
+st.title("Cancer Risk Assessment Model")
 df = pd.read_csv(csv_url)
 
 # Define features (X) and target (y)
@@ -197,9 +199,9 @@ with tab3:
     f1_score = report_df.loc["1", "f1-score"]
 
     st.write(f"### Class 1 (Cancer Positive) Metrics:")
-    st.write(f"Precision: {precision * 100:.2f}%")
-    st.write(f"Recall: {recall * 100:.2f}%")
-    st.write(f"F1-Score: {f1_score * 100:.2f}%")
+    st.write(f"- **Precision:** {precision * 100:.2f}")
+    st.write(f"- **Recall: \** {recall * 100:.2f}%")
+    st.write(f"- **F1-Score:** {f1_score * 100:.2f}")
 
     st.write("### Confusion Matrix")
     cm = confusion_matrix(y_test, y_pred)
