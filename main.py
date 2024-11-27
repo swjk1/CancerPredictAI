@@ -7,6 +7,26 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import PolynomialFeatures
+
+poly = PolynomialFeatures(degree=2)
+X_poly = poly.fit_transform(X[['BMI', 'Age']])
+X_poly_df = pd.DataFrame(X_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
+
+# Define parameter grid
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [5, 10, None],
+    'min_samples_split': [2, 5],
+}
+
+# Grid search
+grid_search = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=5)
+grid_search.fit(X_train, y_train)
+
+# Best model
+best_model = grid_search.best_estimator_
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
@@ -64,6 +84,13 @@ else:
 gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
+
+# Adjust genetic risk weight
+genetic_risk_scaled = genetic_risk * 0.1  # Reduce genetic risk contribution
+
+# Adjust other feature weights
+bmi_weighted = bmi * 1.5  # Increase the weight of BMI
+smoking_weighted = smoking_encoded * 2.0  # Increase the weight of smoking
 
 # Prepare input for prediction
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
