@@ -117,7 +117,22 @@ with tab1:
         st.write("")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
-        
+
+# Check feature importance
+feature_importance = model.feature_importances_
+
+# Create a DataFrame to display the feature importance
+importance_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': feature_importance
+})
+
+# Sort by importance to see which features are most influential
+importance_df = importance_df.sort_values(by='Importance', ascending=False)
+
+# Display the feature importance
+st.write("### Feature Importance:")
+st.write(importance_df)     
 
 with tab2:
     # Try to read and display the CSV file
