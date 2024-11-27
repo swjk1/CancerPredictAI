@@ -1,68 +1,69 @@
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import PolynomialFeatures
-
-poly = PolynomialFeatures(degree=2)
-X_poly = poly.fit_transform(X[['BMI', 'Age']])
-X_poly_df = pd.DataFrame(X_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
-
-# Define parameter grid
-param_grid = {
-    'n_estimators': [100, 200],
-    'max_depth': [5, 10, None],
-    'min_samples_split': [2, 5],
-}
-
-# Grid search
-grid_search = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=5)
-grid_search.fit(X_train, y_train)
-
-# Best model
-best_model = grid_search.best_estimator_
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
-
-st.title("Cancer Risk Assessment Model")
 df = pd.read_csv(csv_url)
-
 
 # Define features (X) and target (y)
 X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
 y = df['Diagnosis']
 
-# Train the model
+# Encode categorical variables
+X['Gender'] = X['Gender'].map({'Male': 0, 'Female': 1})
+X['Smoking'] = X['Smoking'].map({'No': 0, 'Yes': 1})
+X['CancerHistory'] = X['CancerHistory'].map({'No': 0, 'Yes': 1})
+
+# Polynomial Feature Expansion
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly.fit_transform(X[['Age', 'BMI', 'PhysicalActivity', 'AlcoholIntake']])  # Polynomial features for numeric columns
+X_poly_df = pd.DataFrame(X_poly, columns=poly.get_feature_names_out(['Age', 'BMI', 'PhysicalActivity', 'AlcoholIntake']))
+X = X.drop(['Age', 'BMI', 'PhysicalActivity', 'AlcoholIntake'], axis=1)  # Remove original columns
+X = pd.concat([X, X_poly_df], axis=1)  # Concatenate the polynomial features
+
+# Train/Test Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+
+# Define the RandomForest model
 model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
 
+# Hyperparameter tuning using RandomizedSearchCV
+param_grid = {
+    'n_estimators': [50, 100, 150, 200],
+    'max_depth': [10, 20, 30, None],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'bootstrap': [True, False]
+}
 
-# Streamlit app layout
-st.title("Cancer Risk Prediction")
+random_search = RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=100, cv=3, verbose=2, random_state=42, n_jobs=-1)
+random_search.fit(X_train, y_train)
 
-# Sidebar: Input Patient Data
+# Best parameters from the random search
+best_model = random_search.best_estimator_
+
+# Streamlit App Layout
+st.title("Cancer Risk Prediction Model")
+
+# Sidebar: User Input for Prediction
 st.sidebar.header("Input Patient Data")
 
-# Define user inputs
+# User input fields
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
 bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
 smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
 cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
-physical_activity = st.sidebar.slider(
-    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
-)
-alcohol_intake = st.sidebar.slider(
-    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
-)
+physical_activity = st.sidebar.slider("Physical Activity Per Week (hours)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
+alcohol_intake = st.sidebar.slider("Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
@@ -80,54 +81,28 @@ else:
     else:
         genetic_risk = 0
 
-# Encoding inputs
+# Encoding inputs for prediction
 gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
-# Adjust genetic risk weight
-genetic_risk_scaled = genetic_risk * 0.1  # Reduce genetic risk contribution
+# Adjust genetic risk weight (scaled to 10% influence)
+genetic_risk_scaled = genetic_risk * 0.1
 
-# Adjust other feature weights
-bmi_weighted = bmi * 1.5  # Increase the weight of BMI
-smoking_weighted = smoking_encoded * 2.0  # Increase the weight of smoking
+# Prepare input data for prediction
+input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk_scaled, physical_activity, alcohol_intake, cancer_history_encoded]])
 
-# Prepare input for prediction
-input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
+# Polynomial features for the input data
+input_data_poly = poly.transform(input_data[:, [0, 2, 5, 6]])  # Only transform numeric features
+input_data = np.concatenate([input_data[:, [0, 1, 3, 4, 7]], input_data_poly], axis=1)
 
-# Handle potential input errors
-if age <= 0 or age > 120:
-    st.sidebar.error("Age must be between 1 and 120.")
-if bmi <= 0 or bmi > 50:
-    st.sidebar.error("BMI must be between 10 and 50.")
-
-# Predict with the trained model
-y_pred = model.predict(X_test)
-
-
-st.markdown(
-    """
-    <style>
-    /* Increase font size for tab buttons */
-    div[class*="stTabs"] button {
-        font-size: 80px;
-        padding: 10px 20px; /* Adjust padding if needed */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
-
-
+# Streamlit tabs
 tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
-# Content for each tab
 with tab1:
-    # Predict and display result
+    # Predict and display the result
     if st.sidebar.button("Predict"):
-        prediction_proba = model.predict_proba(input_data)[0][1]  # Probability of High Risk (Diagnosis=1)
+        prediction_proba = best_model.predict_proba(input_data)[0][1]  # Probability of High Risk (Diagnosis=1)
         prediction_percentage = round(prediction_proba * 100, 2)
 
         # Classify risk level
@@ -141,105 +116,61 @@ with tab1:
         # Display the results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
         st.markdown(f"### Risk Level: **{risk_level}**")
-        st.write("")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
 
-# Check feature importance
-feature_importance = model.feature_importances_
-
-# Create a DataFrame to display the feature importance
-importance_df = pd.DataFrame({
-    'Feature': X.columns,
-    'Importance': feature_importance
-})
-
-# Sort by importance to see which features are most influential
-importance_df = importance_df.sort_values(by='Importance', ascending=False)
-
-# Display the feature importance
-st.write("### Feature Importance:")
-st.write(importance_df)     
-
 with tab2:
-    # Try to read and display the CSV file
-    try:
-        # Load the CSV file into a DataFrame
-        
+    # Display the data in Streamlit
+    st.header("Cancer Data:")
+    st.dataframe(df)  # Interactive table
 
-        # Display the data in Streamlit
-        st.header("Cancer Data:")
-        st.dataframe(df)  # Interactive table
+    # Optional: Display summary statistics
+    st.header("Summary Statistics:")
+    st.write(df.describe())
 
-        # Optional: Display summary statistics
-        st.header("Summary Statistics:")
-        st.write(df.describe())
+    # Automatically generate histograms for all numeric columns
+    st.write("### Histograms for Numeric Columns:")
 
-        # Automatically generate histograms for all numeric columns
-        st.write("### Histograms for Numeric Columns:")
+    # Select numeric columns only
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    num_cols = len(numeric_columns)
 
-        # Select numeric columns only
-        numeric_columns = df.select_dtypes(include=[np.number]).columns
-        num_cols = len(numeric_columns)
+    if num_cols > 0:
+        # Create subplots for all numeric columns
+        fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
+        axes = axes.flatten()  # Flatten axes for easy iteration
 
-        if num_cols > 0:
-            # Create subplots for all numeric columns
-            fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
-            axes = axes.flatten()  # Flatten axes for easy iteration
-    
-            for i, column in enumerate(numeric_columns):
-                ax = axes[i]
-                ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
-                ax.set_title(f"Histogram of {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-                ax.grid(True, linestyle='--', alpha=0.7)
-    
-            # Hide unused subplots
-            for j in range(i + 1, len(axes)):
-                fig.delaxes(axes[j])
-    
-            # Display the histograms
-            st.pyplot(fig)
-        else:
-            st.warning("No numeric columns available for histogram generation.")
+        for i, column in enumerate(numeric_columns):
+            ax = axes[i]
+            ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
+            ax.set_title(f"Histogram of {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+            ax.grid(True, linestyle='--', alpha=0.7)
 
-    except Exception as e:
-        st.error(f"An error occurred while loading the CSV file: {e}")
+        # Hide unused subplots
+        for j in range(i + 1, len(axes)):
+            fig.delaxes(axes[j])
+
+        # Display the histograms
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histogram generation.")
 
 with tab3:
-    # Calculate accuracy
-
+    # Accuracy and Classification Metrics
+    y_pred = best_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     st.write(f"### Accuracy: {accuracy * 100:.2f}%")
 
-    # Display classification report
-
     report = classification_report(y_test, y_pred, output_dict=True)
-
     st.write("### Classification Report")
     report_df = pd.DataFrame(report).transpose()
     st.dataframe(report_df)
 
-    # Display key metrics for class 1
-    precision = report_df.loc["1", "precision"]
-    recall = report_df.loc["1", "recall"]
-    f1_score = report_df.loc["1", "f1-score"]
-
-    st.write("### Key Metrics for Class 1 (Cancer)")
-    st.write(f"- **Precision:** {precision:.2f}")
-    st.write(f"- **Recall:** {recall:.2f}")
-    st.write(f"- **F1-Score:** {f1_score:.2f}")
-
-
-
-    st.write("### Confusion Matrix")
+    # Display confusion matrix
     cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=best_model.classes_)
     fig, ax = plt.subplots()
-    disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+    disp.plot(ax=ax, cmap='Blues', values_format='d')
     st.pyplot(fig)
-
-
-
