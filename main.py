@@ -11,8 +11,6 @@ from sklearn.preprocessing import PolynomialFeatures
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
-
-st.title("Cancer Risk Assessment Model")
 df = pd.read_csv(csv_url)
 
 # Define features (X) and target (y)
@@ -33,7 +31,7 @@ model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
 # Streamlit app layout
-st.title("Cancer Risk Prediction")
+st.title("Cancer Risk Assessment Model")
 
 # Sidebar: Input Patient Data
 st.sidebar.header("Input Patient Data")
@@ -203,3 +201,10 @@ with tab3:
     st.write(f"Recall: {recall * 100:.2f}%")
     st.write(f"F1-Score: {f1_score * 100:.2f}%")
 
+    st.write("### Confusion Matrix")
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+
+    fig, ax = plt.subplots()
+    disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+    st.pyplot(fig)
