@@ -118,29 +118,22 @@ tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
 # Content for each tab
 with tab1:
-    # Predict and display result
+    # Predict and display result only when the "Predict" button is clicked
     if st.sidebar.button("Predict"):
-        # Prepare input for prediction (original input data from the sidebar)
+        # Prepare input for prediction (already collected in the sidebar)
         input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
-        # Convert to DataFrame to use the same feature names as the training data
-        input_df = pd.DataFrame(input_data, columns=['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory'])
+        # Apply the same polynomial transformation to the input data as we did during training
+        input_data_poly = poly.transform(input_data[:, [2, 0]])  # Apply to 'Age' (index 0) and 'BMI' (index 2)
+        
+        # Combine the original input data with the polynomial features
+        input_data_transformed = np.hstack([input_data, input_data_poly])
 
-        # Apply Polynomial Features (same as during training)
-        input_poly = poly.transform(input_df[['BMI', 'Age']])
-
-        # Convert the polynomial features to a DataFrame and concatenate with the original input data
-        input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
-        input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
-
-        # Check if the input_data_transformed has the same columns as the training data
-        st.write("Input Data Columns:", input_data_transformed.columns)
-
-        # Make prediction with the model using the transformed input data
+        # Predict the probability of cancer risk
         prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
         prediction_percentage = round(prediction_proba * 100, 2)
 
-        # Classify risk level
+        # Classify risk level based on the probability
         if prediction_percentage < 33:
             risk_level = "Low Risk"
         elif prediction_percentage < 66:
@@ -148,12 +141,12 @@ with tab1:
         else:
             risk_level = "High Risk"
 
-        # Display the results
+        # Display the prediction results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
         st.markdown(f"### Risk Level: **{risk_level}**")
-        st.write("")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
+
 
 with tab2:
     # Try to read and display the CSV file
