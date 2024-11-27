@@ -86,17 +86,17 @@ elif bmi_option == "No":
 if bmi is None:
     st.sidebar.error("Please enter a valid BMI value to proceed.")
 else:
-# Define user inputs
-age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
-gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
-smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
-cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
-physical_activity = st.sidebar.slider(
-    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
-)
-alcohol_intake = st.sidebar.slider(
-    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
-)
+    # Define user inputs
+    age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
+    gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
+    smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
+    cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+    physical_activity = st.sidebar.slider(
+        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
+    )
+    alcohol_intake = st.sidebar.slider(
+        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
+    )
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
