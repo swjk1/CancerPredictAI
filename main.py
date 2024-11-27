@@ -63,7 +63,11 @@ elif bmi_option == "No":
     else:
         weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
         height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
-        
+
+      # Debugging: Check if the weight and height are correctly input
+    st.sidebar.write(f"Entered Weight: {weight} ({unit_system})")
+    st.sidebar.write(f"Entered Height: {height} ({unit_system})")
+    
     # Calculate BMI when the user presses the button
     if st.sidebar.button("Calculate BMI"):
         if weight > 0 and height > 0:
@@ -92,15 +96,12 @@ else:
     smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
     cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
     physical_activity = st.sidebar.slider(
-        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
-    )
+        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
     alcohol_intake = st.sidebar.slider(
-        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
-    )
+        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
-
 if family_history == "No":
     genetic_risk = 0
 else:
