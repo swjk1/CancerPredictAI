@@ -72,17 +72,34 @@ gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
-# Prepare input for prediction
+# Prepare input for prediction (original input data from the sidebar)
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
-# Handle potential input errors
-if age <= 0 or age > 120:
-    st.sidebar.error("Age must be between 1 and 120.")
-if bmi <= 0 or bmi > 50:
-    st.sidebar.error("BMI must be between 10 and 50.")
+# Convert to DataFrame to use the same feature names as the training data
+input_df = pd.DataFrame(input_data, columns=['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory'])
 
-# Predict with the trained model
-y_pred = model.predict(X_test)
+# Apply Polynomial Features (same as during training)
+input_poly = poly.transform(input_df[['BMI', 'Age']])
+
+# Convert the polynomial features to a DataFrame and concatenate with the original input data
+input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
+input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
+
+# Make prediction with the model using the transformed input data
+prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
+prediction_percentage = round(prediction_proba * 100, 2)
+
+# Classify risk level
+if prediction_percentage < 33:
+    risk_level = "Low Risk"
+elif prediction_percentage < 66:
+    risk_level = "Medium Risk"
+else:
+    risk_level = "High Risk"
+
+# Display the results
+st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
+st.markdown(f"### Risk Level: **{risk_level}**")
 
 st.markdown(
     """
