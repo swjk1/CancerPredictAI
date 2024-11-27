@@ -82,22 +82,6 @@ input_poly = poly.transform(input_df[['BMI', 'Age']])
 input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
 input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
 
-# Make prediction with the model using the transformed input data
-prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
-prediction_percentage = round(prediction_proba * 100, 2)
-
-# Classify risk level
-if prediction_percentage < 33:
-    risk_level = "Low Risk"
-elif prediction_percentage < 66:
-    risk_level = "Medium Risk"
-else:
-    risk_level = "High Risk"
-
-# Display the results
-st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
-st.markdown(f"### Risk Level: **{risk_level}**")
-
 st.markdown(
     """
     <style>
