@@ -199,30 +199,39 @@ with tab2:
     except Exception as e:
         st.error(f"An error occurred while loading the CSV file: {e}")
 
+# In tab3 where you evaluate the model's performance on the test set
 with tab3:
-    # Calculate accuracy
+    # Predict on the test set
+    y_pred = model.predict(X_test)
+
+    # Calculate accuracy score for the model on the test set
     accuracy = accuracy_score(y_test, y_pred)
-    st.write(f"### Accuracy: {accuracy * 100:.2f}%")
+    st.write(f"### Model Accuracy on Test Data: {accuracy * 100:.2f}%")
 
     # Display classification report
     report = classification_report(y_test, y_pred, output_dict=True)
-
     st.write("### Classification Report")
     report_df = pd.DataFrame(report).transpose()
     st.dataframe(report_df)
 
-    # Display key metrics for class 1
-    precision = report_df.loc["1", "precision"]
-    recall = report_df.loc["1", "recall"]
-    f1_score = report_df.loc["1", "f1-score"]
+    # Display key metrics for class 1 (Cancer Positive), make sure the label "1" exists in your model
+    if "1" in report_df.index:
+        precision = report_df.loc["1", "precision"]
+        recall = report_df.loc["1", "recall"]
+        f1_score = report_df.loc["1", "f1-score"]
 
-    st.write(f"### Class 1 (Cancer Positive) Metrics:")
-    st.write(f"- **Precision:** {precision * 100:.2f}")
-    st.write(f"- **Recall: \** {recall * 100:.2f}%")
-    st.write(f"- **F1-Score:** {f1_score * 100:.2f}")
+        st.write(f"### Class 1 (Cancer Positive) Metrics:")
+        st.write(f"Precision: {precision * 100:.2f}%")
+        st.write(f"Recall: {recall * 100:.2f}%")
+        st.write(f"F1-Score: {f1_score * 100:.2f}%")
+    else:
+        st.write("### No Class 1 (Cancer Positive) found in the model output")
 
+    # Display confusion matrix
     st.write("### Confusion Matrix")
     cm = confusion_matrix(y_test, y_pred)
+    
+    # Ensure correct display of confusion matrix labels
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
 
     fig, ax = plt.subplots()
