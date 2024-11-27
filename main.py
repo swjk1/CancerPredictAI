@@ -32,6 +32,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
+# Store BMI in session_state to persist across reruns
+if 'bmi' not in st.session_state:
+    st.session_state.bmi = None
+    
 # Sidebar: BMI Input Section
 def calculate_bmi(weight, height, unit_system):
     if unit_system == "Metric":
@@ -49,7 +53,7 @@ st.sidebar.header("Input Patient Data")
 bmi_option = st.sidebar.radio("Do you know your BMI?", ("Yes", "No"))
 
 # Initialize bmi variable to avoid reference error
-bmi = None
+bmi = st.session_state.bmi
 
 if bmi_option == "Yes":
     bmi = st.sidebar.number_input("Enter your BMI", min_value=0.0, step=0.1)
@@ -64,10 +68,6 @@ elif bmi_option == "No":
         weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
         height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
 
-    # Debugging: Check if the weight and height are correctly input
-    st.sidebar.write(f"Entered Weight: {weight} ({unit_system})")
-    st.sidebar.write(f"Entered Height: {height} ({unit_system})")
-    
     # Calculate BMI when the user presses the button
     if st.sidebar.button("Calculate BMI"):
         if weight > 0 and height > 0:
@@ -86,6 +86,18 @@ elif bmi_option == "No":
         else:
             st.sidebar.error("Please enter valid values for weight and height.")
 
+# Always display the BMI value and its interpretation
+if st.session_state.bmi is not None:
+    st.sidebar.write(f"### Your BMI: {st.session_state.bmi:.2f}")
+    if st.session_state.bmi < 18.5:
+        st.sidebar.write("You are underweight.")
+    elif 18.5 <= st.session_state.bmi < 24.9:
+        st.sidebar.write("You have a normal weight.")
+    elif 25 <= st.session_state.bmi < 29.9:
+        st.sidebar.write("You are overweight.")
+    else:
+        st.sidebar.write("You are obese.")
+        
 # Check that bmi is defined before using it in the input_data
 if bmi is None:
     st.sidebar.error("Please enter a valid BMI value to proceed.")
