@@ -32,10 +32,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
-# Store BMI in session_state to persist across reruns
-if 'bmi' not in st.session_state:
-    st.session_state.bmi = None
-
 # Sidebar: BMI Input Section
 def calculate_bmi(weight, height, unit_system):
     if unit_system == "Metric":
@@ -53,7 +49,7 @@ st.sidebar.header("Input Patient Data")
 bmi_option = st.sidebar.radio("Do you know your BMI?", ("Yes", "No"))
 
 # Initialize bmi variable to avoid reference error
-bmi = st.session_state.bmi
+bmi = None
 
 if bmi_option == "Yes":
     bmi = st.sidebar.number_input("Enter your BMI", min_value=0.0, step=0.1)
@@ -68,6 +64,10 @@ elif bmi_option == "No":
         weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
         height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
 
+    # Debugging: Check if the weight and height are correctly input
+    st.sidebar.write(f"Entered Weight: {weight} ({unit_system})")
+    st.sidebar.write(f"Entered Height: {height} ({unit_system})")
+    
     # Calculate BMI when the user presses the button
     if st.sidebar.button("Calculate BMI"):
         if weight > 0 and height > 0:
@@ -86,31 +86,19 @@ elif bmi_option == "No":
         else:
             st.sidebar.error("Please enter valid values for weight and height.")
 
-# Always display the BMI value and its interpretation
-if st.session_state.bmi is not None:
-    st.sidebar.write(f"### Your BMI: {st.session_state.bmi:.2f}")
-    if st.session_state.bmi < 18.5:
-        st.sidebar.write("You are underweight.")
-    elif 18.5 <= st.session_state.bmi < 24.9:
-        st.sidebar.write("You have a normal weight.")
-    elif 25 <= st.session_state.bmi < 29.9:
-        st.sidebar.write("You are overweight.")
-    else:
-        st.sidebar.write("You are obese.")
-
-# Ensure BMI is set before proceeding
+# Check that bmi is defined before using it in the input_data
 if bmi is None:
     st.sidebar.error("Please enter a valid BMI value to proceed.")
-
-# Initialize other inputs
-age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
-gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
-smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
-cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
-physical_activity = st.sidebar.slider(
-    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
-alcohol_intake = st.sidebar.slider(
-    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
+else:
+    # Define user inputs
+    age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
+    gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
+    smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
+    cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+    physical_activity = st.sidebar.slider(
+        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
+    alcohol_intake = st.sidebar.slider(
+        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
@@ -145,9 +133,34 @@ input_poly = poly.transform(input_df[['BMI', 'Age']])
 input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
 input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
 
-# Content for prediction tab
-if st.sidebar.button("Predict"):
-    if all(val is not None for val in [age, gender, bmi, smoking, genetic_risk, physical_activity, alcohol_intake, cancer_history]):
+st.markdown(
+    """
+    <style>
+    /* Increase font size for tab buttons */
+    div[class*="stTabs"] button {
+        font-size: 80px;
+        padding: 10px 20px; /* Adjust padding if needed */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
+
+# Content for each tab
+with tab1:
+    # Predict and display result only when the "Predict" button is clicked
+    if st.sidebar.button("Predict"):
+        # Prepare input for prediction (already collected in the sidebar)
+        input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
+
+        # Apply the same polynomial transformation to the input data as we did during training
+        input_data_poly = poly.transform(input_data[:, [2, 0]])  # Apply to 'Age' (index 0) and 'BMI' (index 2)
+        
+        # Combine the original input data with the polynomial features
+        input_data_transformed = np.hstack([input_data, input_data_poly])
+
         # Predict the probability of cancer risk
         prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
         prediction_percentage = round(prediction_proba * 100, 2)
@@ -162,16 +175,11 @@ if st.sidebar.button("Predict"):
 
         # Display the prediction results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
-        st.markdown(f"**Risk Level: {risk_level}**")
-
-        # Display additional information about genetic risk factors if applicable
-        if genetic_risk > 0:
-            st.markdown("### Genetic Risk Factors")
-            st.write(f"Genetic Risk: {genetic_risk}")
-            st.write("Family history of cancer plays a critical role in the assessment of your genetic risk.")
+        st.markdown(f"### Risk Level: **{risk_level}**")
     else:
-        st.error("Please fill in all the fields to proceed with the prediction.")
-        
+        st.markdown("### Click **\"Predict\"** to see results")
+
+
 with tab2:
     # Try to read and display the CSV file
     try:
