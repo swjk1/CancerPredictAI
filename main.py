@@ -8,26 +8,12 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.preprocessing import StandardScaler
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/swjk1/CancerPredictAI/main/The_Cancer_data_1500_V2.csv"
 
 st.title("Cancer Risk Assessment Model")
 df = pd.read_csv(csv_url)
-
-# Define scaler and scale the selected features
-scaler = StandardScaler()
-
-# Apply scaling to 'BMI' and 'Smoking' for the training data
-X[['BMI', 'Smoking']] = scaler.fit_transform(X[['BMI', 'Smoking']])
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
-
-# Train the model
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
 
 # Define features (X) and target (y)
 X = df[['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']]
@@ -124,9 +110,6 @@ with tab1:
         # Combine the original input data with the polynomial features
         input_data_transformed = np.hstack([input_data, input_data_poly])
 
-        # Scale 'BMI' and 'Smoking' (same as training scaling)
-        input_data_transformed[:, [2, 3]] = scaler.transform(input_data_transformed[:, [2, 3]])
-
         # Predict the probability of cancer risk
         prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
         prediction_percentage = round(prediction_proba * 100, 2)
@@ -144,6 +127,7 @@ with tab1:
         st.markdown(f"### Risk Level: **{risk_level}**")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
+
 
 with tab2:
     # Try to read and display the CSV file
