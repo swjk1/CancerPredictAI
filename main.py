@@ -32,8 +32,52 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
+# Sidebar: BMI Input Section
+def calculate_bmi(weight, height, unit_system):
+    if unit_system == "Metric":
+        # Metric Units: weight in kg, height in meters
+        bmi = weight / (height ** 2)
+    elif unit_system == "US":
+        # US Units: weight in pounds, height in inches
+        bmi = 703 * (weight / (height ** 2))
+    return bmi
+    
 # Sidebar: Input Patient Data
 st.sidebar.header("Input Patient Data")
+
+# Define BMI Input Option (Manual or Calculator)
+bmi_option = st.sidebar.radio("Do you know your BMI?", ("Yes", "No"))
+
+if bmi_option == "Yes":
+    bmi = st.sidebar.number_input("Enter your BMI", min_value=0.0, step=0.1)
+
+elif bmi_option == "No":
+    unit_system = st.sidebar.radio("Select Unit System", ("Metric", "US"))
+    
+    if unit_system == "Metric":
+        weight = st.sidebar.number_input("Enter your weight (kg)", min_value=1, step=0.1)
+        height = st.sidebar.number_input("Enter your height (m)", min_value=0.5, step=0.01)
+    else:
+        weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1, step=0.1)
+        height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1)
+
+    # Calculate BMI when the user presses the button
+    if st.sidebar.button("Calculate BMI"):
+        if weight > 0 and height > 0:
+            bmi = calculate_bmi(weight, height, unit_system)
+            st.sidebar.write(f"### Your BMI: {bmi:.2f}")
+
+            # Interpretation of BMI
+            if bmi < 18.5:
+                st.sidebar.write("You are underweight.")
+            elif 18.5 <= bmi < 24.9:
+                st.sidebar.write("You have a normal weight.")
+            elif 25 <= bmi < 29.9:
+                st.sidebar.write("You are overweight.")
+            else:
+                st.sidebar.write("You are obese.")
+        else:
+            st.sidebar.error("Please enter valid values for weight and height.")
 
 # Define user inputs
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
