@@ -64,7 +64,7 @@ elif bmi_option == "No":
         weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
         height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
 
-      # Debugging: Check if the weight and height are correctly input
+    # Debugging: Check if the weight and height are correctly input
     st.sidebar.write(f"Entered Weight: {weight} ({unit_system})")
     st.sidebar.write(f"Entered Height: {height} ({unit_system})")
     
