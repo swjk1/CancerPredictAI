@@ -85,7 +85,7 @@ elif bmi_option == "No":
 # Check that bmi is defined before using it in the input_data
 if bmi is None:
     st.sidebar.error("Please enter a valid BMI value to proceed.")
-
+else:
 # Define user inputs
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
 gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
