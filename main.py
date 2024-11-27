@@ -120,7 +120,24 @@ tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 with tab1:
     # Predict and display result
     if st.sidebar.button("Predict"):
-        prediction_proba = model.predict_proba(input_data)[0][1]  # Probability of High Risk (Diagnosis=1)
+        # Prepare input for prediction (original input data from the sidebar)
+        input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
+
+        # Convert to DataFrame to use the same feature names as the training data
+        input_df = pd.DataFrame(input_data, columns=['Age', 'Gender', 'BMI', 'Smoking', 'GeneticRisk', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory'])
+
+        # Apply Polynomial Features (same as during training)
+        input_poly = poly.transform(input_df[['BMI', 'Age']])
+
+        # Convert the polynomial features to a DataFrame and concatenate with the original input data
+        input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
+        input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
+
+        # Check if the input_data_transformed has the same columns as the training data
+        st.write("Input Data Columns:", input_data_transformed.columns)
+
+        # Make prediction with the model using the transformed input data
+        prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
         prediction_percentage = round(prediction_proba * 100, 2)
 
         # Classify risk level
@@ -137,22 +154,6 @@ with tab1:
         st.write("")
     else:
         st.markdown("### Click **\"Predict\"** to see results")
-
-# Check feature importance
-feature_importance = model.feature_importances_
-
-# Create a DataFrame to display the feature importance
-importance_df = pd.DataFrame({
-    'Feature': X.columns,
-    'Importance': feature_importance
-})
-
-# Sort by importance to see which features are most influential
-importance_df = importance_df.sort_values(by='Importance', ascending=False)
-
-# Display the feature importance
-st.write("### Feature Importance:")
-st.write(importance_df)
 
 with tab2:
     # Try to read and display the CSV file
