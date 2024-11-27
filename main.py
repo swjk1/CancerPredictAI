@@ -32,76 +32,25 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
-# Sidebar: BMI Input Section
-def calculate_bmi(weight, height, unit_system):
-    if unit_system == "Metric":
-        # Metric Units: weight in kg, height in meters
-        bmi = weight / (height ** 2)
-    elif unit_system == "US":
-        # US Units: weight in pounds, height in inches
-        bmi = 703 * (weight / (height ** 2))
-    return bmi
-    
 # Sidebar: Input Patient Data
 st.sidebar.header("Input Patient Data")
 
-# Define BMI Input Option (Manual or Calculator)
-bmi_option = st.sidebar.radio("Do you know your BMI?", ("Yes", "No"))
-
-# Initialize bmi variable to avoid reference error
-bmi = None
-
-if bmi_option == "Yes":
-    bmi = st.sidebar.number_input("Enter your BMI", min_value=0.0, step=0.1)
-
-elif bmi_option == "No":
-    unit_system = st.sidebar.radio("Select Unit System", ("Metric", "US"))
-    
-    if unit_system == "Metric":
-        weight = st.sidebar.number_input("Enter your weight (kg)", min_value=1.0, step=0.1, format="%.1f")
-        height = st.sidebar.number_input("Enter your height (m)", min_value=0.5, step=0.01, format="%.2f")
-    else:
-        weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
-        height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
-
-    # Debugging: Check if the weight and height are correctly input
-    st.sidebar.write(f"Entered Weight: {weight} ({unit_system})")
-    st.sidebar.write(f"Entered Height: {height} ({unit_system})")
-    
-    # Calculate BMI when the user presses the button
-    if st.sidebar.button("Calculate BMI"):
-        if weight > 0 and height > 0:
-            bmi = calculate_bmi(weight, height, unit_system)
-            st.sidebar.write(f"### Your BMI: {bmi:.2f}")
-
-            # Interpretation of BMI
-            if bmi < 18.5:
-                st.sidebar.write("You are underweight.")
-            elif 18.5 <= bmi < 24.9:
-                st.sidebar.write("You have a normal weight.")
-            elif 25 <= bmi < 29.9:
-                st.sidebar.write("You are overweight.")
-            else:
-                st.sidebar.write("You are obese.")
-        else:
-            st.sidebar.error("Please enter valid values for weight and height.")
-
-# Check that bmi is defined before using it in the input_data
-if bmi is None:
-    st.sidebar.error("Please enter a valid BMI value to proceed.")
-else:
-    # Define user inputs
-    age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
-    gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
-    smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
-    cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
-    physical_activity = st.sidebar.slider(
-        "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
-    alcohol_intake = st.sidebar.slider(
-        "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1)
+# Define user inputs
+age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
+gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
+bmi = st.sidebar.slider("BMI", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
+smoking = st.sidebar.selectbox("Smoking", options=["No", "Yes"])
+cancer_history = st.sidebar.selectbox("Cancer History", options=["No", "Yes"])
+physical_activity = st.sidebar.slider(
+    "Hours of Physical Activity Per Week (0-10)", min_value=0.0, max_value=10.0, value=5.0, step=0.1
+)
+alcohol_intake = st.sidebar.slider(
+    "Alcohol Intake (0-5)", min_value=0.0, max_value=5.0, value=2.5, step=0.1
+)
 
 # Sidebar: Genetic Risk Assessment
 family_history = st.sidebar.selectbox("Do you have a family history of cancer?", ["No", "Yes"])
+
 if family_history == "No":
     genetic_risk = 0
 else:
