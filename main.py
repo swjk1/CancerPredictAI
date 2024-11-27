@@ -55,12 +55,12 @@ elif bmi_option == "No":
     unit_system = st.sidebar.radio("Select Unit System", ("Metric", "US"))
     
     if unit_system == "Metric":
-        weight = st.sidebar.number_input("Enter your weight (kg)", min_value=1, step=0.1)
-        height = st.sidebar.number_input("Enter your height (m)", min_value=0.5, step=0.01)
+        weight = st.sidebar.number_input("Enter your weight (kg)", min_value=1.0, step=0.1, format="%.1f")
+        height = st.sidebar.number_input("Enter your height (m)", min_value=0.5, step=0.01, format="%.2f")
     else:
-        weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1, step=0.1)
-        height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1)
-
+        weight = st.sidebar.number_input("Enter your weight (lbs)", min_value=1.0, step=0.1, format="%.1f")
+        height = st.sidebar.number_input("Enter your height (inches)", min_value=10, step=0.1, format="%.1f")
+        
     # Calculate BMI when the user presses the button
     if st.sidebar.button("Calculate BMI"):
         if weight > 0 and height > 0:
