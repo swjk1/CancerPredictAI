@@ -48,6 +48,9 @@ st.sidebar.header("Input Patient Data")
 # Define BMI Input Option (Manual or Calculator)
 bmi_option = st.sidebar.radio("Do you know your BMI?", ("Yes", "No"))
 
+# Initialize bmi variable to avoid reference error
+bmi = None
+
 if bmi_option == "Yes":
     bmi = st.sidebar.number_input("Enter your BMI", min_value=0.0, step=0.1)
 
@@ -78,6 +81,10 @@ elif bmi_option == "No":
                 st.sidebar.write("You are obese.")
         else:
             st.sidebar.error("Please enter valid values for weight and height.")
+
+# Check that bmi is defined before using it in the input_data
+if bmi is None:
+    st.sidebar.error("Please enter a valid BMI value to proceed.")
 
 # Define user inputs
 age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
