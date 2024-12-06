@@ -69,7 +69,7 @@ gender_encoded = 1 if gender == "Female" else 0
 smoking_encoded = 1 if smoking == "Yes" else 0
 cancer_history_encoded = 1 if cancer_history == "Yes" else 0
 
-# Prepare input for prediction (original input data from the sidebar)
+# Prepare input for prediction
 input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
 
 # Convert to DataFrame to use the same feature names as the training data
@@ -82,132 +82,56 @@ input_poly = poly.transform(input_df[['BMI', 'Age']])
 input_poly_df = pd.DataFrame(input_poly, columns=poly.get_feature_names_out(['BMI', 'Age']))
 input_data_transformed = pd.concat([input_df, input_poly_df], axis=1)
 
-st.markdown(
-    """
-    <style>
-    /* Increase font size for tab buttons */
-    div[class*="stTabs"] button {
-        font-size: 80px;
-        padding: 10px 20px; /* Adjust padding if needed */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
+# Tabs setup
 tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
 # Content for each tab
 with tab1:
-    # Predict and display result only when the "Predict" button is clicked
     if st.sidebar.button("Predict"):
-        # Prepare input for prediction (already collected in the sidebar)
-        input_data = np.array([[age, gender_encoded, bmi, smoking_encoded, genetic_risk, physical_activity, alcohol_intake, cancer_history_encoded]])
-
-        # Apply the same polynomial transformation to the input data as we did during training
-        input_data_poly = poly.transform(input_data[:, [2, 0]])  # Apply to 'Age' (index 0) and 'BMI' (index 2)
-        
-        # Combine the original input data with the polynomial features
-        input_data_transformed = np.hstack([input_data, input_data_poly])
-
-        # Predict the probability of cancer risk
-        prediction_proba = model.predict_proba(input_data_transformed)[0][1]  # Probability of High Risk (Diagnosis=1)
+        prediction_proba = model.predict_proba(input_data_transformed)[0][1]
         prediction_percentage = round(prediction_proba * 100, 2)
 
-        # Classify risk level based on the probability
         if prediction_percentage < 33:
             risk_level = "Low Risk"
+            advice = "Routine check-ups every 2-3 years are sufficient. Maintain a healthy lifestyle with balanced nutrition and regular exercise."
         elif prediction_percentage < 66:
             risk_level = "Medium Risk"
+            advice = "Schedule a check-up annually. Adopt a healthy lifestyle and consider consultations with a healthcare professional for prevention strategies."
         else:
             risk_level = "High Risk"
+            advice = "Consult a healthcare provider immediately for further tests and screenings. Regular check-ups every 6 months are recommended, along with lifestyle adjustments."
 
         # Display the prediction results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
         st.markdown(f"### Risk Level: **{risk_level}**")
+        st.markdown(f"### Advice: {advice}")
     else:
-        st.markdown("### Click **\"Predict\"** to see results")
-
+        st.markdown("### Click **\"Predict\"** to see results.")
 
 with tab2:
-    # Try to read and display the CSV file
-    try:
-        # Load the CSV file into a DataFrame
-        # Display the data in Streamlit
-        st.header("Cancer Data:")
-        st.dataframe(df)  # Interactive table
+    st.header("Cancer Data:")
+    st.dataframe(df)
+    st.header("Summary Statistics:")
+    st.write(df.describe())
 
-        # Optional: Display summary statistics
-        st.header("Summary Statistics:")
-        st.write(df.describe())
+    st.write("### Histograms for Numeric Columns:")
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
 
-        # Automatically generate histograms for all numeric columns
-        st.write("### Histograms for Numeric Columns:")
+    if len(numeric_columns) > 0:
+        fig, axes = plt.subplots(nrows=(len(numeric_columns) + 1) // 2, ncols=2, figsize=(12, 6))
+        axes = axes.flatten()
 
-        # Select numeric columns only
-        numeric_columns = df.select_dtypes(include=[np.number]).columns
-        num_cols = len(numeric_columns)
+        for i, column in enumerate(numeric_columns):
+            axes[i].hist(df[column], bins=20, alpha=0.7, edgecolor="black")
+            axes[i].set_title(f"{column} Histogram")
+        st.pyplot(fig)
 
-        if num_cols > 0:
-            # Create subplots for all numeric columns
-            fig, axes = plt.subplots(nrows=(num_cols + 1) // 2, ncols=2, figsize=(12, 4 * ((num_cols + 1) // 2)))
-            axes = axes.flatten()  # Flatten axes for easy iteration
-
-            for i, column in enumerate(numeric_columns):
-                ax = axes[i]
-                ax.hist(df[column], bins=20, color='darkblue', alpha=0.7, edgecolor='black')
-                ax.set_title(f"Histogram of {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-                ax.grid(True, linestyle='--', alpha=0.7)
-
-            # Hide unused subplots
-            for j in range(i + 1, len(axes)):
-                fig.delaxes(axes[j])
-
-            # Display the histograms
-            st.pyplot(fig)
-        else:
-            st.warning("No numeric columns available for histogram generation.")
-
-    except Exception as e:
-        st.error(f"An error occurred while loading the CSV file: {e}")
-
-# In tab3 where you evaluate the model's performance on the test set
 with tab3:
-    # Predict on the test set
     y_pred = model.predict(X_test)
-
-    # Calculate accuracy score for the model on the test set
     accuracy = accuracy_score(y_test, y_pred)
-    st.write(f"### Model Accuracy on Test Data: {accuracy * 100:.2f}%")
-
-    # Display classification report
-    report = classification_report(y_test, y_pred, output_dict=True)
-    st.write("### Classification Report")
-    report_df = pd.DataFrame(report).transpose()
-    st.dataframe(report_df)
-
-    # Display key metrics for class 1 (Cancer Positive), make sure the label "1" exists in your model
-    if "1" in report_df.index:
-        precision = report_df.loc["1", "precision"]
-        recall = report_df.loc["1", "recall"]
-        f1_score = report_df.loc["1", "f1-score"]
-
-        st.write(f"### Class 1 (Cancer Positive) Metrics:")
-        st.write(f"Precision: {precision * 100:.2f}%")
-        st.write(f"Recall: {recall * 100:.2f}%")
-        st.write(f"F1-Score: {f1_score * 100:.2f}%")
-    else:
-        st.write("### No Class 1 (Cancer Positive) found in the model output")
-
-    # Display confusion matrix
-    st.write("### Confusion Matrix")
+    st.write(f"### Accuracy: {accuracy:.2%}")
+    st.write("### Confusion Matrix:")
     cm = confusion_matrix(y_test, y_pred)
-    
-    # Ensure correct display of confusion matrix labels
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-
     fig, ax = plt.subplots()
-    disp.plot(ax=ax, cmap='Blues', values_format='d')  # Use values_format='.2f' for percentages
+    ConfusionMatrixDisplay(cm).plot(ax=ax)
     st.pyplot(fig)
