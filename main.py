@@ -87,19 +87,31 @@ tab1, tab2, tab3 = st.tabs(["Results", "Data", "Reliability"])
 
 # Content for each tab
 with tab1:
+    # Add a button to trigger the prediction
     if st.sidebar.button("Predict"):
+        # Predict the probability of cancer risk
         prediction_proba = model.predict_proba(input_data_transformed)[0][1]
         prediction_percentage = round(prediction_proba * 100, 2)
 
+        # Determine risk level and corresponding advice
         if prediction_percentage < 33:
             risk_level = "Low Risk"
-            advice = "Routine check-ups every 2-3 years are sufficient. Maintain a healthy lifestyle with balanced nutrition and regular exercise."
+            advice = (
+                "Routine check-ups every 2-3 years are sufficient. "
+                "Maintain a healthy lifestyle with balanced nutrition and regular exercise."
+            )
         elif prediction_percentage < 66:
             risk_level = "Medium Risk"
-            advice = "Schedule a check-up annually. Adopt a healthy lifestyle and consider consultations with a healthcare professional for prevention strategies."
+            advice = (
+                "Schedule a check-up annually. Adopt a healthy lifestyle and consider consultations "
+                "with a healthcare professional for prevention strategies."
+            )
         else:
             risk_level = "High Risk"
-            advice = "Consult a healthcare provider immediately for further tests and screenings. Regular check-ups every 6 months are recommended, along with lifestyle adjustments."
+            advice = (
+                "Consult a healthcare provider immediately for further tests and screenings. "
+                "Regular check-ups every 6 months are recommended, along with lifestyle adjustments."
+            )
 
         # Display the prediction results
         st.markdown(f"### Predicted Cancer Risk: **{prediction_percentage}%**")
