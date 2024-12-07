@@ -59,6 +59,8 @@ else:
     early_diagnosis = st.sidebar.selectbox("Were any of these diagnoses at an early age (below 50)?", ["No", "Yes"])
     if close_relatives >= 3:
         genetic_risk = 3  # High risk
+    elif early_diagnosis == "Yes":
+        genetic_risk = 2
     elif close_relatives == 2 or remote_relatives >= 3:
         genetic_risk = 2  # Moderate risk
     else:
