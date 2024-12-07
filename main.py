@@ -57,7 +57,7 @@ else:
     close_relatives = st.sidebar.slider("How many close relatives (parents, siblings, children) have been diagnosed with cancer?", 0, 10, 0)
     remote_relatives = st.sidebar.slider("How many remote relatives (grandparents, uncles, aunts, cousins) have been diagnosed with cancer?", 0, 10, 0)
     early_diagnosis = st.sidebar.selectbox("Were any of these diagnoses at an early age (below 50)?", ["No", "Yes"])
-    if close_relatives >= 2 or early_diagnosis == "Yes":
+    if close_relatives >= 2 and early_diagnosis == "Yes":
         genetic_risk = 2
     elif close_relatives == 1 or remote_relatives >= 2:
         genetic_risk = 1
